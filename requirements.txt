@@ -8,6 +8,7 @@ torch
 torchvision
 transformers
 pyarrow
+scipy
 
 # developer tools
 jupyterlab
