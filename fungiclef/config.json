@@ -13,7 +13,7 @@
             "images": "gs://dsgt-clef-fungiclef-2024/raw/DF20-train_val.tar.gz",
             "metadata": "gs://dsgt-clef-fungiclef-2024/raw/FungiCLEF2023_train_metadata_PRODUCTION.csv",
             "raw_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20",
-            "embedded_dino": "",
+            "embedded_dino": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_embeddings/dino/data",
             "embedded_dct": ""
 
         },

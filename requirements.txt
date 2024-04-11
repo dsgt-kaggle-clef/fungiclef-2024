@@ -6,6 +6,7 @@ imageio
 scikit-learn
 torch
 torchvision
+torchdata
 transformers
 pyarrow
 scipy
