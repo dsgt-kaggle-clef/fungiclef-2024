@@ -1,1 +1,4 @@
-# fungiclef-2024
+# FungiClef-2024
+
+## Entry Points
+

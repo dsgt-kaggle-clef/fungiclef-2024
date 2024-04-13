@@ -27,8 +27,8 @@ def create_dataframe(spark, images_path: Path, metadata_path: str):
     split_path = split(image_df["path"], "/")
 
     # Extract metadata from the file path
-    image_final_df = (
-        image_df.withColumn("image_path", element_at(split_path, -1))
+    image_final_df = image_df.withColumn(
+        "image_path", element_at(split_path, -1)
     )
 
     # Select and rename columns to fit the target schema, including renaming 'content' to 'image_binary_data'
@@ -45,8 +45,8 @@ def create_dataframe(spark, images_path: Path, metadata_path: str):
     )
 
     # replace .JPG to .jpg
-    meta_df = (
-        meta_df.withColumn("image_path", regexp_replace('image_path', ".JPG", '.jpg'))
+    meta_df = meta_df.withColumn(
+        "image_path", regexp_replace("image_path", ".JPG", ".jpg")
     )
 
     # Perform an inner join on the 'image_path' column
@@ -56,7 +56,7 @@ def create_dataframe(spark, images_path: Path, metadata_path: str):
 
 
 def read_config():
-    with open('fungiclef/config.json') as f:
+    with open("fungiclef/config.json") as f:
         config = json.load(f)
     return config
 
@@ -69,9 +69,13 @@ def main():
     spark = get_spark()
 
     # Set Paths - adjust as needed
-    images_path = Path('../../../')  / Path(config["mnt_data_paths"]) / Path("DF20")
+    images_path = (
+        Path("../../../") / Path(config["mnt_data_paths"]) / Path("DF20")
+    )
     metadata_path = config["gs_paths"]["raw"]["training_metadata"]
-    outpout_path = config["gs_paths"]["parquet"]["training_data"] # here no path
+    outpout_path = config["gs_paths"]["parquet"][
+        "training_data"
+    ]  # here no path
 
     # Create image dataframe
     final_df = create_dataframe(

@@ -10,7 +10,12 @@ from pyspark.ml.util import DefaultParamsReadable, DefaultParamsWritable
 from pyspark.sql import DataFrame
 from pyspark.sql.types import ArrayType, FloatType
 from scipy.fftpack import dctn
-from transformers import AutoImageProcessor, AutoModel, CLIPProcessor, CLIPModel
+from transformers import (
+    AutoImageProcessor,
+    AutoModel,
+    CLIPProcessor,
+    CLIPModel,
+)
 
 
 class WrappedDinoV2(
@@ -53,7 +58,8 @@ class WrappedDinoV2(
             # Move inputs to GPU
             if torch.cuda.is_available():
                 model_inputs = {
-                    key: value.to("cuda") for key, value in model_inputs.items()
+                    key: value.to("cuda")
+                    for key, value in model_inputs.items()
                 }
 
             with torch.no_grad():
@@ -112,7 +118,9 @@ class DCTN(
 
         def predict(inputs: np.ndarray) -> np.ndarray:
             # inputs is a 3D array of shape (batch_size, img_dim, img_dim)
-            return np.array([dctn_filter(x, k=self.filter_size) for x in inputs])
+            return np.array(
+                [dctn_filter(x, k=self.filter_size) for x in inputs]
+            )
 
         return predict
 
@@ -157,21 +165,22 @@ class WrappedCLIP(
         processor = CLIPProcessor.from_pretrained(self.model_name)
         model = CLIPModel.from_pretrained(self.model_name)
 
-
         # Move model to GPU
         if torch.cuda.is_available():
             model = model.to("cuda")
 
         def predict(inputs: np.ndarray) -> np.ndarray:
             images = [Image.open(io.BytesIO(input)) for input in inputs]
-            texts = None #TODO: Add text input
-            model_inputs = processor(text=texts, images=images, return_tensors="pt", padding=True)
-
+            texts = None  # TODO: Add text input
+            model_inputs = processor(
+                text=texts, images=images, return_tensors="pt", padding=True
+            )
 
             # Move inputs to GPU
             if torch.cuda.is_available():
                 model_inputs = {
-                    key: value.to("cuda") for key, value in model_inputs.items()
+                    key: value.to("cuda")
+                    for key, value in model_inputs.items()
                 }
 
             with torch.no_grad():
