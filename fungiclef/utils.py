@@ -1,6 +1,7 @@
 # From SnakeCLEF/Murillo Gustinelli
 import os
 import sys
+import json
 from contextlib import contextmanager
 
 from pyspark.sql import SparkSession
@@ -33,3 +34,8 @@ def spark_resource(*args, **kwargs):
     finally:
         if spark is not None:
             spark.stop()
+
+def read_config(path: str) -> dict:
+    with open(path) as f:
+        config = json.load(f)
+    return config

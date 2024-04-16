@@ -8,6 +8,12 @@ torch
 torchvision
 transformers
 pyarrow
+scipy
+luigi
+google-api-python-client
+google-auth
+gcsfs
+fsspec
 
 # developer tools
 jupyterlab
