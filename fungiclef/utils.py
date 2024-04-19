@@ -5,6 +5,7 @@ import json
 from contextlib import contextmanager
 import torch.nn as nn
 import timm
+import time
 
 from pyspark.sql import SparkSession
 
@@ -12,18 +13,22 @@ os.environ["PYSPARK_PYTHON"] = sys.executable
 os.environ["PYSPARK_DRIVER_PYTHON"] = sys.executable
 
 
-def get_spark(cores=4, memory="8g", local_dir="/mnt/data/tmp", **kwargs):
+def get_spark(cores=os.cpu_count(),
+              memory=os.environ.get("PYSPARK_DRIVER_MEMORY", "4g"),
+              executor_memory=os.environ.get("PYSPARK_EXECUTOR_MEMORY", "1g"),
+              local_dir="/mnt/data/tmp", app_name="fungi_clef", **kwargs):
     """Get a spark session for a single driver."""
     builder = (
         SparkSession.builder.config("spark.driver.memory", memory)
+        .config("spark.executor.memory", executor_memory)
         .config("spark.driver.cores", cores)
         .config("spark.sql.execution.arrow.pyspark.enabled", "true")
         .config("spark.driver.maxResultSize", "4g")
-        .config("spark.local.dir", local_dir)
+        .config("spark.local.dir", f"{local_dir}/{int(time.time())}")
     )
     for k, v in kwargs.items():
         builder = builder.config(k, v)
-    return builder.getOrCreate()
+    return builder.appName(app_name).master(f"local[{cores}]").getOrCreate()
 
 
 @contextmanager
