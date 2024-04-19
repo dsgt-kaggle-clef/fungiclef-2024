@@ -6,7 +6,7 @@ parser.add_argument(
     "--gcs-root-path",
     type=str,
     default="gs://dsgt-clef-fungiclef-2024",
-    help="Root directory for plantclef-2024 in GCS",
+    help="Root directory for fungiclef-2024 in GCS",
 )
 parser.add_argument(
     "--train-data-path",

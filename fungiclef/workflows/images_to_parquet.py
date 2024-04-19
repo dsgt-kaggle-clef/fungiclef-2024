@@ -5,7 +5,7 @@ from pathlib import Path
 
 from pyspark.sql.functions import element_at, split, regexp_replace
 
-from utils import get_spark
+from fungiclef.utils import get_spark
 
 """
 Before running this script, make sure you have downloaded and extracted the dataset into the data folder.
@@ -49,6 +49,9 @@ def create_dataframe(spark, images_path: Path, metadata_path: str):
         meta_df.withColumn("image_path", regexp_replace('image_path', ".JPG", '.jpg'))
     )
 
+    image_final_df = (
+        image_final_df.withColumn("image_path", regexp_replace('image_path', ".JPG", '.jpg'))
+    )
     # Perform an inner join on the 'image_path' column
     final_df = image_final_df.join(meta_df, "image_path", "left")
 
@@ -56,7 +59,7 @@ def create_dataframe(spark, images_path: Path, metadata_path: str):
 
 
 def read_config():
-    with open('fungiclef/config.json') as f:
+    with open('../config.json') as f:
         config = json.load(f)
     return config
 
@@ -71,7 +74,7 @@ def main():
     # Set Paths - adjust as needed
     images_path = Path('../../../')  / Path(config["mnt_data_paths"]) / Path("DF20")
     metadata_path = config["gs_paths"]["raw"]["training_metadata"]
-    outpout_path = config["gs_paths"]["parquet"]["training_data"] # here no path
+    output_path = config["gs_paths"]["parquet"]["training_data"] # here no path
 
     # Create image dataframe
     final_df = create_dataframe(
@@ -81,7 +84,7 @@ def main():
     )
 
     # Write the DataFrame to GCS in Parquet format
-    final_df.write.mode("overwrite").parquet(outpout_path)
+    final_df.write.mode("overwrite").parquet(output_path)
 
 
 if __name__ == "__main__":
