@@ -6,7 +6,7 @@ from pyspark.ml.functions import vector_to_array
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
 
-from fungiclef.transforms import DCTN, WrappedDinoV2
+from fungiclef.embedding.transforms import DCTN, WrappedDinoV2
 from fungiclef.utils import spark_resource
 
 

@@ -5,7 +5,7 @@ from pathlib import Path
 
 from pyspark.sql.functions import element_at, split, regexp_replace
 
-from utils import get_spark
+from fungiclef.utils import get_spark
 
 """
 Before running this script, make sure you have downloaded and extracted the dataset into the data folder.
@@ -56,7 +56,7 @@ def create_dataframe(spark, images_path: Path, metadata_path: str):
 
 
 def read_config():
-    with open('fungiclef/config.json') as f:
+    with open('../config.json') as f:
         config = json.load(f)
     return config
 

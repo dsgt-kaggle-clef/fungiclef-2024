@@ -3,6 +3,8 @@ import os
 import sys
 import json
 from contextlib import contextmanager
+import torch.nn as nn
+import timm
 
 from pyspark.sql import SparkSession
 
@@ -40,3 +42,4 @@ def read_config(path: str) -> dict:
     with open(path) as f:
         config = json.load(f)
     return config
+
