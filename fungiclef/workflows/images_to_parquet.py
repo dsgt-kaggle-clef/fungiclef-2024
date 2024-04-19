@@ -49,6 +49,9 @@ def create_dataframe(spark, images_path: Path, metadata_path: str):
         meta_df.withColumn("image_path", regexp_replace('image_path', ".JPG", '.jpg'))
     )
 
+    image_final_df = (
+        image_final_df.withColumn("image_path", regexp_replace('image_path', ".JPG", '.jpg'))
+    )
     # Perform an inner join on the 'image_path' column
     final_df = image_final_df.join(meta_df, "image_path", "left")
 

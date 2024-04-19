@@ -1,7 +1,7 @@
 [project]
 name = "fungiclef"
 version = "0.0.1"
-requires-python = ">= 3.10"
+requires-python = "== 3.10"
 
 [build-system]
 requires = ["setuptools >= 61.0"]
