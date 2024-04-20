@@ -5,7 +5,7 @@ import torch
 from PIL import Image
 from pyspark.ml import Transformer
 from pyspark.ml.functions import predict_batch_udf
-from pyspark.ml.param.shared import HasInputCol, HasOutputCol
+from pyspark.ml.param.shared import HasInputCol, HasOutputCol, HasInputCols
 from pyspark.ml.util import DefaultParamsReadable, DefaultParamsWritable
 from pyspark.sql import DataFrame
 from pyspark.sql.types import ArrayType, FloatType
@@ -138,7 +138,7 @@ class DCTN(
 
 class WrappedCLIP(
     Transformer,
-    HasInputCol,
+    HasInputCols,
     HasOutputCol,
     DefaultParamsReadable,
     DefaultParamsWritable,
@@ -149,13 +149,13 @@ class WrappedCLIP(
 
     def __init__(
         self,
-        input_col_image: str = "input",
+        input_cols: list[str] = ["input_img", "input_txt"],
         output_col: str = "output",
         model_name="openai/clip-vit-base-patch32",
-        batch_size=8,
+        batch_size=64,
     ):
         super().__init__()
-        self._setDefault(inputCol=input_col_image, outputCol=output_col)
+        self._setDefault(inputCols=input_cols, outputCol=output_col)
         self.model_name = model_name
         self.batch_size = batch_size
 
@@ -164,16 +164,23 @@ class WrappedCLIP(
 
         processor = CLIPProcessor.from_pretrained(self.model_name)
         model = CLIPModel.from_pretrained(self.model_name)
-
+        
         # Move model to GPU
         if torch.cuda.is_available():
             model = model.to("cuda")
 
-        def predict(inputs: np.ndarray) -> np.ndarray:
-            images = [Image.open(io.BytesIO(input)) for input in inputs]
-            texts = None  # TODO: Add text input
+        def predict(images: np.ndarray, texts: np.ndarray) -> np.ndarray:
+            image_obj = [Image.open(io.BytesIO(img)) for img in images]
+
+            #print(texts)
+            text = list()
+            for txt in texts:
+                text.append(txt)
+            #print(text)
+
+            #text = texts
             model_inputs = processor(
-                text=texts, images=images, return_tensors="pt", padding=True
+                text=text, images=image_obj, return_tensors="pt", padding=True, truncation=True
             )
 
             # Move inputs to GPU
@@ -185,22 +192,18 @@ class WrappedCLIP(
 
             with torch.no_grad():
                 outputs = model(**model_inputs)
-                last_hidden_states = outputs.last_hidden_state
+                image_features = outputs.image_embeds
+                text_features = outputs.text_embeds
 
-            numpy_array = last_hidden_states.cpu().numpy()
-            new_shape = numpy_array.shape[:-2] + (-1,)
-            numpy_array = numpy_array.reshape(new_shape)
+            # Concatenate or otherwise combine image and text features
+            combined_features = torch.cat((image_features, text_features), dim=1)
+            numpy_array = combined_features.cpu().numpy()
 
             return numpy_array
 
         return predict
 
     def _transform(self, df: DataFrame):
-        return df.withColumn(
-            self.getOutputCol(),
-            predict_batch_udf(
-                make_predict_fn=self._make_predict_fn,
-                return_type=ArrayType(FloatType()),
-                batch_size=self.batch_size,
-            )(self.getInputCol()),
-        )
+        predict_udf = predict_batch_udf(self._make_predict_fn, return_type=ArrayType(FloatType()), batch_size=self.batch_size)
+        return df.withColumn(self.getOutputCol(), predict_udf(self.getInputCols()[0], self.getInputCols()[1]))
+
