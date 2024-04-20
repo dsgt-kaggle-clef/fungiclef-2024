@@ -70,7 +70,8 @@ class ProcessBase(luigi.Task):
 
     def run(self):
         with spark_resource(
-            **{"spark.sql.shuffle.partitions": self.num_partitions}
+            **{"spark.sql.shuffle.partitions": self.num_partitions,
+               "spark.sql.parquet.enableVectorizedReader": False}
         ) as spark:
             df = spark.read.parquet(self.input_path)
 
@@ -143,16 +144,14 @@ class Workflow(luigi.Task):
                     self.output_path.split("/")[-1], subset_path
                 )
 
-            yield [
-                ProcessDino(
+            yield ProcessDino(
                     input_path=self.input_path,
                     output_path=f"{final_output_path}/dino",
                     should_subset=subset,
-                    sample_id=i,
+                    sample_id=None,
                     num_sample_id=10,
                 )
-                for i in range(10)
-            ]
+
             yield ProcessDCT(
                 input_path=f"{final_output_path}/dino/data",
                 output_path=f"{final_output_path}/dino_dct",
