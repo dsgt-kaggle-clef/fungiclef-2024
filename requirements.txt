@@ -15,6 +15,7 @@ google-auth
 gcsfs
 fsspec
 timm
+pacmap
 
 # developer tools
 jupyterlab
