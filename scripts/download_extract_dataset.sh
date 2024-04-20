@@ -17,7 +17,7 @@
 set -e # Exit immediately if a command exits with a non-zero status.
 
 # Default values
-DEFAULT_DATASET_URL="gs://dsgt-clef-fungiclef-2024/raw/DF20-train_val.tar.gz"
+DEFAULT_DATASET_URL="gs://dsgt-clef-fungiclef-2024/raw/DF20-300px.tar.gz"
 DEFAULT_DESTINATION_DIR="/mnt/data"
 
 # Check if custom arguments are provided
