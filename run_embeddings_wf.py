@@ -11,13 +11,13 @@ parser.add_argument(
 parser.add_argument(
     "--train-data-path",
     type=str,
-    default="dev/dev_train",
+    default="data/parquet/DF20_300px_and_DF21_300px_train",
     help="Root directory for training data in GCS",
 )
 parser.add_argument(
     "--output-name-path",
     type=str,
-    default="dev/dev_embedded",
+    default="data/parquet/DF20_300px_and_DF21_300px_train_embedding",
     help="GCS path for output Parquet files",
 )
 
