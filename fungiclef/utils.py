@@ -18,6 +18,9 @@ def get_spark(cores=4, memory="8g", local_dir="/mnt/data/tmp", **kwargs):
         .config("spark.sql.execution.arrow.pyspark.enabled", "true")
         .config("spark.driver.maxResultSize", "4g")
         .config("spark.local.dir", local_dir)
+        # adding to fix error
+        .config("spark.hadoop.fs.gs.impl", "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem")
+        .config("spark.hadoop.fs.gs.auth.service.account.enable", "true")
     )
     for k, v in kwargs.items():
         builder = builder.config(k, v)
