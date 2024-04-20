@@ -6,7 +6,7 @@ from pyspark.ml.functions import vector_to_array
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
 
-from fungiclef.transforms import DCTN, WrappedDinoV2
+from fungiclef.embedding.transforms import DCTN, WrappedDinoV2
 from fungiclef.utils import spark_resource
 
 
@@ -15,13 +15,19 @@ class ProcessBase(luigi.Task):
     output_path = luigi.Parameter()
     should_subset = luigi.BoolParameter(default=False)
     num_partitions = luigi.IntParameter(default=100)
-    sample_id = luigi.OptionalIntParameter(default=None) # helper column to split the data
-    num_sample_id = luigi.IntParameter(default=10) # Split the DataFrame and transformations into batches
+    sample_id = luigi.OptionalIntParameter(
+        default=None
+    )  # helper column to split the data
+    num_sample_id = luigi.IntParameter(
+        default=10
+    )  # Split the DataFrame and transformations into batches
 
     def output(self):
-        if self.sample_id is None: # If not using subset
+        if self.sample_id is None:  # If not using subset
             # save both the model pipeline and the dataset
-            return luigi.contrib.gcs.GCSTarget(f"{self.output_path}/data/_SUCCESS")
+            return luigi.contrib.gcs.GCSTarget(
+                f"{self.output_path}/data/_SUCCESS"
+            )
         else:
             return luigi.contrib.gcs.GCSTarget(
                 f"{self.output_path}/data/sample_id={self.sample_id}/_SUCCESS"
@@ -41,7 +47,8 @@ class ProcessBase(luigi.Task):
             transformed = (
                 transformed.withColumn(
                     "sample_id",
-                    F.crc32(F.col("species").cast("string")) % self.num_sample_id,
+                    F.crc32(F.col("species").cast("string"))
+                    % self.num_sample_id,
                 )
                 .where(F.col("sample_id") == self.sample_id)
                 .drop("sample_id")
@@ -78,10 +85,15 @@ class ProcessBase(luigi.Task):
             if self.sample_id is None:
                 output_path = f"{self.output_path}/data"
             else:
-                output_path = f"{self.output_path}/data/sample_id={self.sample_id}"
+                output_path = (
+                    f"{self.output_path}/data/sample_id={self.sample_id}"
+                )
 
             print(f"Writing to {output_path}")
-            transformed.repartition(self.num_partitions).write.mode("overwrite").parquet(output_path)
+            transformed.repartition(self.num_partitions).write.mode(
+                "overwrite"
+            ).parquet(output_path)
+
 
 class ProcessDino(ProcessBase):
     @property
@@ -146,6 +158,7 @@ class Workflow(luigi.Task):
                 output_path=f"{final_output_path}/dino_dct",
                 should_subset=subset,
             )
+
 
 def run_embeddings_wf(input_path: str, output_path: str):
 

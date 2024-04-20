@@ -14,6 +14,7 @@ google-api-python-client
 google-auth
 gcsfs
 fsspec
+timm
 
 # developer tools
 jupyterlab

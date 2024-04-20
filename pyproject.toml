@@ -1,0 +1,17 @@
+[project]
+name = "fungiclef"
+version = "0.0.1"
+requires-python = "== 3.10"
+
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]  
+include = ["fungiclef"] 
+exclude = ["notebooks"]  
+namespaces = false 
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
