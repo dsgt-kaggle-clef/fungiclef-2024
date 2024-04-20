@@ -24,11 +24,8 @@
             "embedded_dct": ""
         },
         "val": {
-            "metadata": "gs://dsgt-clef-fungiclef-2024/raw/FungiCLEF2023_val_metadata_PRODUCTION.csv"
-        },
-        "test": {
             "images": "gs://dsgt-clef-fungiclef-2024/raw/DF21.tar.gz",
-            "metadata": "gs://dsgt-clef-fungiclef-2024/raw/FungiCLEF2023_public_test_metadata_PRODUCTION.csv",
+            "metadata": "gs://dsgt-clef-fungiclef-2024/raw/FungiCLEF2023_val_metadata_PRODUCTION.csv",
             "raw_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF21",
             "embedded_dino": "",
             "embedded_dct": ""
@@ -43,6 +40,11 @@
             "raw_parquet": "gs://dsgt-clef-fungiclef-2024/dev/dev_train",
             "embedded_dino": "gs://dsgt-clef-fungiclef-2024/dev/dev_embedded/dino",
             "embedded_dct": "gs://dsgt-clef-fungiclef-2024/dev/dev_embedded/dino_dct"
+        },
+        "train_and_test_300px": {
+            "raw_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px",
+            "train_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_train",
+            "test_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_test"
         }
     },
     "mnt_data_paths":
