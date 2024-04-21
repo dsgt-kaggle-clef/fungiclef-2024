@@ -26,7 +26,7 @@
         },
         "dev_set": {
             "train": "gs://dsgt-clef-fungiclef-2024/dev/dev_train",
-            "test": "gs://dsgt-clef-fungiclef-2024/dev/dev_test",
+            "val": "gs://dsgt-clef-fungiclef-2024/dev/dev_val",
             "embedded_dino": "gs://dsgt-clef-fungiclef-2024/dev/dev_embedded/dino",
             "embedded_dct": "gs://dsgt-clef-fungiclef-2024/dev/dev_embedded/dino_dct"
         },
@@ -34,6 +34,7 @@
         "train_and_test_300px": {
             "raw_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px",
             "train_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_train",
+            "val_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_val",
             "test_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_test"
         }
     },
