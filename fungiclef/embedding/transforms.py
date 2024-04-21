@@ -305,13 +305,13 @@ class WrappedCLIPV2(
 
             text_obj = [txt for txt in texts]
 
-            # text = texts
+            # TDOD: Add padding and truncation to the processor somewhere esel
             model_inputs = processor(
                 text=text_obj,
                 images=image_obj,
                 return_tensors="pt",
-                padding=True,
-                truncation=True,
+                # padding=True,
+                # truncation=True,
             )
 
             # Move inputs to GPU
@@ -339,7 +339,6 @@ class WrappedCLIPV2(
         return predict
 
     def _transform(self, df: DataFrame):
-
         # predict_udf requires return_type. My CLIP predict function returns a dictionary with 3 keys
         # This can be stored in a pyspark StructField
         schema = StructType(
