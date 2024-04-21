@@ -6,7 +6,7 @@ from fungiclef.workflows.train_test_split import train_test_split
 
 def main():
     """Main function that processes data and writes the output dataframe to GCS"""
-    config = read_config('fungiclef/config.json')
+    config = read_config('/home/chris/fungiclef-2024/fungiclef/config.json')
 
     # Initialize Spark
     spark = get_spark()
@@ -17,7 +17,7 @@ def main():
 
     # Output_paths
     dev_train_output_path = config["gs_paths"]["dev_set"]["train"]
-    dev_test_output_path = config["gs_paths"]["dev_set"]["test"]
+    dev_val_output_path = config["gs_paths"]["dev_set"]["val"]
 
     # Load the DataFrame from the Parquet file
     df = spark.read.parquet(df_path)
@@ -60,7 +60,7 @@ def main():
     print(f"Dev Subset has {percentage_poisonous_sub} poisonous mushrooms")
 
     # Create image dataframe
-    dev_train_df, dev_test_df = train_test_split(
+    dev_train_df, dev_val_df = train_test_split(
         df=species_subset,
         train_pct=0.8,
         stratify_col="class_id",
@@ -68,7 +68,7 @@ def main():
 
     # Write the DataFrame to GCS in Parquet format
     dev_train_df.repartition(1).write.mode("overwrite").parquet(dev_train_output_path)
-    dev_test_df.repartition(1).write.mode("overwrite").parquet(dev_test_output_path)
+    dev_val_df.repartition(1).write.mode("overwrite").parquet(dev_val_output_path)
 
 
 if __name__ == "__main__":
