@@ -21,16 +21,11 @@ class ProcessBase(luigi.Task):
     num_sample_id = luigi.IntParameter(
         default=10
     )  # Split the DataFrame and transformations into batches
-    concat_text_data = luigi.OptionalListParameter(
-        default=None
-    )
 
     def output(self):
         if self.sample_id is None:  # If not using subset
             # save both the model pipeline and the dataset
-            return luigi.contrib.gcs.GCSTarget(
-                f"{self.output_path}/data/_SUCCESS"
-            )
+            return luigi.contrib.gcs.GCSTarget(f"{self.output_path}/data/_SUCCESS")
         else:
             return luigi.contrib.gcs.GCSTarget(
                 f"{self.output_path}/data/sample_id={self.sample_id}/_SUCCESS"
@@ -50,8 +45,7 @@ class ProcessBase(luigi.Task):
             transformed = (
                 transformed.withColumn(
                     "sample_id",
-                    F.crc32(F.col("species").cast("string"))
-                    % self.num_sample_id,
+                    F.crc32(F.col("species").cast("string")) % self.num_sample_id,
                 )
                 .where(F.col("sample_id") == self.sample_id)
                 .drop("sample_id")
@@ -71,10 +65,15 @@ class ProcessBase(luigi.Task):
 
         return subset_df
 
+    def _preprocess(self, df) -> DataFrame:
+        return df
+
     def run(self):
         with spark_resource(
-            **{"spark.sql.shuffle.partitions": self.num_partitions,
-               "spark.sql.parquet.enableVectorizedReader": False}
+            **{
+                "spark.sql.shuffle.partitions": self.num_partitions,
+                "spark.sql.parquet.enableVectorizedReader": False,
+            }
         ) as spark:
             df = spark.read.parquet(self.input_path)
 
@@ -82,9 +81,7 @@ class ProcessBase(luigi.Task):
                 # Get subset of data to test pipeline
                 df = self._get_subset(df=df)
 
-            if self.concat_text_data is not None:
-                text_cols = [F.concat(F.lit(f"{col_name} "), F.col(col_name).cast("string")).alias(col_name) for col_name in self.concat_text_data]
-                df = df.withColumn("text_data", F.concat_ws(", ", *text_cols))
+            df = self._preprocess(df)
 
             model = self.pipeline().fit(df)
             model.write().overwrite().save(f"{self.output_path}/model")
@@ -93,9 +90,7 @@ class ProcessBase(luigi.Task):
             if self.sample_id is None:
                 output_path = f"{self.output_path}/data"
             else:
-                output_path = (
-                    f"{self.output_path}/data/sample_id={self.sample_id}"
-                )
+                output_path = f"{self.output_path}/data/sample_id={self.sample_id}"
 
             print(f"Writing to {output_path}")
             transformed.repartition(self.num_partitions).write.mode(
@@ -121,12 +116,18 @@ class ProcessDino(ProcessBase):
 
 
 class ProcessDCTN(ProcessBase):
+    filter_size = luigi.IntParameter(default=8)
+
     @property
     def feature_columns(self):
         return ["dct_embedding"]
 
     def pipeline(self):
-        dct = DCTN(input_col="dino_embedding", output_col="dct_embedding")
+        dct = DCTN(
+            input_col="dino_embedding",
+            output_col="dct_embedding",
+            filter_size=self.filter_size,
+        )
         return Pipeline(
             stages=[
                 dct,
@@ -138,12 +139,21 @@ class ProcessDCTN(ProcessBase):
 
 
 class ProcessCLIP(ProcessBase):
+    concat_text_data = luigi.ListParameter()
+
     @property
     def feature_columns(self):
         return ["clip_img_embeddings", "clip_text_embeddings", "clip_dot_embeddings"]
 
     def pipeline(self):
-        dino = WrappedCLIPV2(input_cols=["data", "text_data"], output_cols=["clip_img_embeddings", "clip_text_embeddings", "clip_dot_embeddings"])
+        dino = WrappedCLIPV2(
+            input_cols=["data", "text_data"],
+            output_cols=[
+                "clip_img_embeddings",
+                "clip_text_embeddings",
+                "clip_dot_embeddings",
+            ],
+        )
         return Pipeline(
             stages=[
                 dino,
@@ -152,6 +162,17 @@ class ProcessCLIP(ProcessBase):
                 ),
             ]
         )
+
+    def _preprocess(self, df) -> DataFrame:
+        text_cols = [
+            F.concat(F.lit(f"{col_name} "), F.col(col_name).cast("string")).alias(
+                col_name
+            )
+            for col_name in self.concat_text_data
+        ]
+        df = df.withColumn("text_data", F.concat_ws(", ", *text_cols))
+
+        return df
 
 
 class Workflow(luigi.Task):
@@ -189,48 +210,68 @@ class Workflow(luigi.Task):
                         should_subset=subset,
                         sample_id=i,
                         num_sample_id=self.num_samples,
-                        concat_text_data=['locality', 'level0Gid', 'level1Gid', 'level2Gid', 'Substrate', 'Habitat', 'MetaSubstrate'],
+                        concat_text_data=[
+                            "locality",
+                            "level0Gid",
+                            "level1Gid",
+                            "level2Gid",
+                            "Substrate",
+                            "Habitat",
+                            "MetaSubstrate",
+                        ],
                     )
                     for i in range(self.num_samples)
                 ]
-            
+
             # Alternatively, if you want to run the pipeline on the full dataset
             else:
                 yield ProcessDino(
-                        input_path=self.input_path,
-                        output_path=f"{final_output_path}/dino",
-                        should_subset=subset,
-                        sample_id=None,
-                        num_sample_id=self.num_samples,
-                    )
+                    input_path=self.input_path,
+                    output_path=f"{final_output_path}/dino",
+                    should_subset=subset,
+                    sample_id=None,
+                    num_sample_id=self.num_samples,
+                )
 
                 yield ProcessCLIP(
-                        input_path=self.input_path,
-                        output_path=f"{final_output_path}/clip",
-                        should_subset=subset,
-                        sample_id=None,
-                        num_sample_id=self.num_samples,
-                        concat_text_data=['locality', 'level0Gid', 'level1Gid', 'level2Gid', 'Substrate', 'Habitat', 'MetaSubstrate'],
-                        )
+                    input_path=self.input_path,
+                    output_path=f"{final_output_path}/clip",
+                    should_subset=subset,
+                    sample_id=None,
+                    num_sample_id=self.num_samples,
+                    concat_text_data=[
+                        "locality",
+                        "level0Gid",
+                        "level1Gid",
+                        "level2Gid",
+                        "Substrate",
+                        "Habitat",
+                        "MetaSubstrate",
+                    ],
+                )
 
             # Batching not necessary for DCT
-            yield ProcessDCTN(
-                input_path=f"{final_output_path}/dino/data",
-                output_path=f"{final_output_path}/dino_dct",
-                should_subset=subset,
-            )
-
-
+            yield [
+                ProcessDCTN(
+                    input_path=f"{final_output_path}/dino/data",
+                    output_path=f"{final_output_path}/dino_dct",
+                    should_subset=subset,
+                    filter_size=8,
+                ),
+                ProcessDCTN(
+                    input_path=f"{final_output_path}/dino/data",
+                    output_path=f"{final_output_path}/dino_dct_16",
+                    should_subset=subset,
+                    filter_size=16,
+                ),
+            ]
 
 
 def run_embeddings_wf(input_path: str, output_path: str, num_samples: int = 10):
-
     luigi.build(
         [
             Workflow(
-                input_path=input_path,
-                output_path=output_path,
-                num_samples=num_samples
+                input_path=input_path, output_path=output_path, num_samples=num_samples
             )
         ],
         scheduler_host="services.us-central1-a.c.dsgt-clef-2024.internal",
