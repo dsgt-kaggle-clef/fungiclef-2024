@@ -6,16 +6,11 @@ from PIL import Image
 from pyspark.ml import Transformer
 from pyspark.ml.functions import predict_batch_udf
 from pyspark.ml.param import Param, Params, TypeConverters
-from pyspark.ml.param.shared import (
-    HasInputCol,
-    HasInputCols,
-    HasOutputCol,
-    HasOutputCols,
-)
+from pyspark.ml.param.shared import HasInputCol, HasInputCols, HasOutputCol
 from pyspark.ml.util import DefaultParamsReadable, DefaultParamsWritable
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import array, explode
-from pyspark.sql.types import ArrayType, FloatType, Row, StructField, StructType
+from pyspark.sql.types import ArrayType, FloatType, StructField, StructType
 from scipy.fftpack import dctn
 from transformers import (
     AutoImageProcessor,
@@ -30,31 +25,31 @@ class HasFilterSize(Params):
         Params._dummy(),
         "filter_size",
         "filter size to use for DCTN",
-        typeConverter=TypeConverters.toListInt,
+        typeConverter=TypeConverters.toInt,
     )
 
     def __init__(self) -> None:
         super().__init__()
-        self._setDefault(filter_size=[8])
+        self._setDefault(filter_size=8)
 
     def getFilterSize(self):
         return self.getOrDefault(self.filter_size)
 
 
-class HasTensorShapes(Params):
-    tensor_shape = Param(
+class HasInputTensorShapes(Params):
+    input_tensor_shapes = Param(
         Params._dummy(),
-        "tensor_shape",
+        "input_tensor_shapes",
         "shape of the tensor",
         typeConverter=TypeConverters.toListInt,
     )
 
     def __init__(self) -> None:
         super().__init__()
-        self._setDefault(tensor_shape=[8])
+        self._setDefault(input_tensor_shapes=[8])
 
-    def getTensorShape(self):
-        return self.getOrDefault(self.tensor_shape)
+    def getInputTensorShapes(self):
+        return self.getOrDefault(self.input_tensor_shapes)
 
 
 class WrappedDinoV2(
@@ -128,7 +123,7 @@ class DCTN(
     HasInputCol,
     HasOutputCol,
     HasFilterSize,
-    HasTensorShapes,
+    HasInputTensorShapes,
     DefaultParamsReadable,
     DefaultParamsWritable,
 ):
@@ -142,7 +137,7 @@ class DCTN(
         output_col: str = "output",
         filter_size: int = 8,
         batch_size=8,
-        input_tensor_shapes=[[257, 768]],
+        input_tensor_shapes=[257, 768],
     ):
         super().__init__()
         self._setDefault(
@@ -172,7 +167,7 @@ class DCTN(
                 make_predict_fn=self._make_predict_fn,
                 return_type=ArrayType(FloatType()),
                 batch_size=self.batch_size,
-                input_tensor_shapes=self.getTensorShape(),
+                input_tensor_shapes=[self.getInputTensorShapes()],
             )(self.getInputCol()),
         )
 
