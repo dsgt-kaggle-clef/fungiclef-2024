@@ -11,39 +11,30 @@
     "gs_paths": {
         "train": {
             "images": "gs://dsgt-clef-fungiclef-2024/raw/DF20-train_val.tar.gz",
-            "metadata": "gs://dsgt-clef-fungiclef-2024/raw/FungiCLEF2023_train_metadata_PRODUCTION.csv",
-            "raw_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20",
-            "embedded_dino": "",
-            "embedded_dct": ""
+            "metadata": "gs://dsgt-clef-fungiclef-2024/raw/FungiCLEF2023_train_metadata_PRODUCTION.csv"
 
         },
         "train_300px": {
-            "images": "gs://dsgt-clef-fungiclef-2024/raw/DF20-300px.tar.gz",
-            "raw_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px",
-            "embedded_dino": "",
-            "embedded_dct": ""
+            "images": "gs://dsgt-clef-fungiclef-2024/raw/DF20-300px.tar.gz"
         },
         "val": {
             "images": "gs://dsgt-clef-fungiclef-2024/raw/DF21.tar.gz",
-            "metadata": "gs://dsgt-clef-fungiclef-2024/raw/FungiCLEF2023_val_metadata_PRODUCTION.csv",
-            "raw_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF21",
-            "embedded_dino": "",
-            "embedded_dct": ""
+            "metadata": "gs://dsgt-clef-fungiclef-2024/raw/FungiCLEF2023_val_metadata_PRODUCTION.csv"
         },
-        "test_300px": {
-            "images": "gs://dsgt-clef-fungiclef-2024/raw/DF21_300.tar.gz",
-            "raw_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF21_300px",
-            "embedded_dino": "",
-            "embedded_dct": ""
+        "val_300px": {
+            "images": "gs://dsgt-clef-fungiclef-2024/raw/DF21_300.tar.gz"
         },
-        "dev_train": {
-            "raw_parquet": "gs://dsgt-clef-fungiclef-2024/dev/dev_train",
+        "dev_set": {
+            "train": "gs://dsgt-clef-fungiclef-2024/dev/dev_train",
+            "val": "gs://dsgt-clef-fungiclef-2024/dev/dev_val",
             "embedded_dino": "gs://dsgt-clef-fungiclef-2024/dev/dev_embedded/dino",
             "embedded_dct": "gs://dsgt-clef-fungiclef-2024/dev/dev_embedded/dino_dct"
         },
+
         "train_and_test_300px": {
             "raw_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px",
             "train_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_train",
+            "val_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_val",
             "test_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_test"
         }
     },

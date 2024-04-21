@@ -4,15 +4,13 @@ from typing import Optional
 
 import numpy as np
 import pyspark.sql.functions as f
+import pyspark
+from fungiclef.utils import get_spark, read_config
 
-from fungiclef.utils import get_spark
 
-
-def train_test_split(spark, df_path: Path, train_pct: float, stratify_col: str = "class_id"):
+def train_test_split(df: pyspark.sql.DataFrame, train_pct: float, stratify_col: str = "class_id"):
     """Given a split fraction converts the big train_test_dataset into two data sets based on the stratify_col"""
 
-    # Load the DataFrame from the Parquet file
-    df = spark.read.parquet(df_path)
 
     # Compute the test fraction and round
     test_pct = np.round(1 - train_pct, 2)
@@ -52,16 +50,9 @@ def train_test_split(spark, df_path: Path, train_pct: float, stratify_col: str =
 
     return train_df, test_df
 
-
-def read_config():
-    with open('fungiclef/config.json') as f:
-        config = json.load(f)
-    return config
-
-
 def main():
     """Main function that processes data and writes the output dataframe to GCS"""
-    config = read_config()
+    config = read_config('config.json')
 
     # Initialize Spark
     spark = get_spark()
@@ -74,11 +65,15 @@ def main():
     train_output_path = config["gs_paths"]["train_and_test_300px"]["train_parquet"] 
     test_output_path = config["gs_paths"]["train_and_test_300px"]["test_parquet"] 
 
+
+    # Load the DataFrame from the Parquet file
+    df = spark.read.parquet(df_path)
+
     # Create image dataframe
     train_df, test_df = train_test_split(
-        spark=spark,
-        df_path=df_path,
+        df=df,
         train_pct=0.8,
+        stratify_col="class_id",
     )
 
     # Write the DataFrame to GCS in Parquet format
