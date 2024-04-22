@@ -82,6 +82,10 @@ def main():
     dev_train_df.repartition(1).write.mode("overwrite").parquet(dev_train_output_path)
     dev_test_df.repartition(1).write.mode("overwrite").parquet(dev_test_output_path)
 
+    print("Dataframes written to GCS in Parquet format.")
+    print(f"Dev Train: {dev_train_output_path}")
+    print(f"Dev Test: {dev_test_output_path}")
+
 
 if __name__ == "__main__":
     main()
