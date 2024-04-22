@@ -68,6 +68,7 @@ def main():
     print(f"Dev Subset has {percentage_poisonous_sub} poisonous mushrooms")
 
     # Prep class_id column
+    # TODO: does not find any unknwon or unlabled class_ids given the filters before
     species_subset = manipulate_class_id(species_subset)
 
     # Create image dataframe
