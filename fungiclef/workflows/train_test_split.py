@@ -9,7 +9,17 @@ from fungiclef.utils import get_spark, read_config
 
 
 def train_test_split(df: pyspark.sql.DataFrame, train_pct: float, stratify_col: str = "class_id"):
-    """Given a split fraction converts the big train_test_dataset into two data sets based on the stratify_col"""
+    """
+    Splits a DataFrame into train and test DataFrames based on a given split fraction and a stratification column.
+
+    Args:
+        df (pyspark.sql.DataFrame): The DataFrame to be split.
+        train_pct (float): The fraction of data to be used for training. Should be between 0 and 1.
+        stratify_col (str, optional): The column used for stratification. Defaults to "class_id".
+
+    Returns:
+        tuple: A tuple containing the train DataFrame and the test DataFrame.
+    """
 
     # Compute the test fraction and round
     test_pct = np.round(1 - train_pct, 2)
@@ -63,22 +73,18 @@ def train_test_split(df: pyspark.sql.DataFrame, train_pct: float, stratify_col: 
     return train_df, test_df
 
 
-def main():
-    """Main function that processes data and writes the output dataframe to GCS"""
-    config = read_config("fungiclef/config.json")
+def manipulate_class_id(df: pyspark.sql.DataFrame) -> pyspark.sql.DataFrame:
+    """
+    Manipulates the class_id column in the given DataFrame.
+    Unknown (-1) are mapped to max() + 1.
+    Test data (NaN) is mapped to max() + 2.
 
-    # Initialize Spark
-    spark = get_spark()
+    Args:
+        df (pyspark.sql.DataFrame): The input DataFrame containing the class_id column.
 
-    # Path to the images and metadata in a dataframe of train and test 300px
-    df_path = config["gs_paths"]["train_and_test_300px_w_test_meta"]["raw_parquet"]
-
-    # Output_paths
-    train_output_path = config["gs_paths"]["train_and_test_300px_w_test_meta"]["train_parquet"]
-    test_output_path = config["gs_paths"]["train_and_test_300px_w_test_meta"]["test_parquet"]
-
-    # Load the DataFrame from the Parquet file
-    df = spark.read.parquet(df_path)
+    Returns:
+        pyspark.sql.DataFrame: The modified DataFrame with the class_id column manipulated.
+    """
 
     # Map unknown class_id from -1 to max() + 1
     unknown_class_id_count = df.filter(f.col("class_id") == -1).count()
@@ -97,6 +103,29 @@ def main():
         f.when(f.col("data_set") == "test", max_class_id + 2).otherwise(f.col("class_id")),
     )
     print(f"{test_class_id_count} test class_id examples mapped to {max_class_id + 2}")
+
+    return df
+
+
+def main():
+    """Main function that processes data and writes the output dataframe to GCS"""
+    config = read_config("fungiclef/config.json")
+
+    # Initialize Spark
+    spark = get_spark()
+
+    # Path to the images and metadata in a dataframe of train and test 300px
+    df_path = config["gs_paths"]["train_and_test_300px_w_test_meta"]["raw_parquet"]
+
+    # Output_paths
+    train_output_path = config["gs_paths"]["train_and_test_300px_w_test_meta"]["train_parquet"]
+    test_output_path = config["gs_paths"]["train_and_test_300px_w_test_meta"]["test_parquet"]
+
+    # Load the DataFrame from the Parquet file
+    df = spark.read.parquet(df_path)
+
+    # Prep class_id column
+    df = manipulate_class_id(df)
 
     # Create image dataframe
     train_df, test_df = train_test_split(
