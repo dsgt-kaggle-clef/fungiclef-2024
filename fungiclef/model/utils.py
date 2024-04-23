@@ -1,4 +1,5 @@
 import timm
+import torch.nn as nn
 
 def get_timm_model(architecture_name, target_size, pretrained = False):
     """Helper function to get default model architectures using Timm
