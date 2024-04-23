@@ -66,7 +66,7 @@ def score_model(predicted_class: np.ndarray, gt_df: pd.DataFrame):
     pred_df = gt_df[["observationID"]].copy()
 
     try:
-        pred_df['class_id'] == predicted_class
+        pred_df['class_id'] = predicted_class
     except Exception as e:
         raise ValueError("Prediction Length Mismatch: {e}".format(e=e))
     
