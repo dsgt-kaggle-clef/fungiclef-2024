@@ -9,7 +9,6 @@ from pyspark.ml.param import Param, Params, TypeConverters
 from pyspark.ml.param.shared import HasInputCol, HasInputCols, HasOutputCol
 from pyspark.ml.util import DefaultParamsReadable, DefaultParamsWritable
 from pyspark.sql import DataFrame
-from pyspark.sql.functions import array, explode
 from pyspark.sql.types import ArrayType, FloatType, StructField, StructType
 from scipy.fftpack import dctn
 from transformers import (
@@ -17,6 +16,8 @@ from transformers import (
     AutoModel,
     CLIPModel,
     CLIPProcessor,
+    CLIPImageProcessor,
+    CLIPTokenizer,
 )
 
 
@@ -91,9 +92,7 @@ class WrappedDinoV2(
 
             # Move inputs to GPU
             if torch.cuda.is_available():
-                model_inputs = {
-                    key: value.to("cuda") for key, value in model_inputs.items()
-                }
+                model_inputs = {key: value.to("cuda") for key, value in model_inputs.items()}
 
             with torch.no_grad():
                 outputs = model(**model_inputs)
@@ -186,96 +185,8 @@ class WrappedCLIP(
     def __init__(
         self,
         input_cols: list[str] = ["input_img", "input_txt"],
-        output_col: list[str] = "Output",
-        model_name="openai/clip-vit-base-patch32",
-        batch_size=64,
-    ):
-        super().__init__()
-        self._setDefault(inputCols=input_cols, outputCol=output_col)
-        self.model_name = model_name
-        self.batch_size = batch_size
-
-    def _make_predict_fn(self):
-        """Return PredictBatchFunction using a closure over the model"""
-
-        processor = CLIPProcessor.from_pretrained(self.model_name)
-        model = CLIPModel.from_pretrained(self.model_name)
-
-        # Move model to GPU
-        if torch.cuda.is_available():
-            model = model.to("cuda")
-
-        def predict(images: np.ndarray, texts: np.ndarray) -> np.ndarray:
-            image_obj = [Image.open(io.BytesIO(img)) for img in images]
-
-            text_obj = [txt for txt in texts]
-
-            # text = texts
-            model_inputs = processor(
-                text=text_obj,
-                images=image_obj,
-                return_tensors="pt",
-                padding=True,
-                truncation=True,
-            )
-
-            # Move inputs to GPU
-            if torch.cuda.is_available():
-                model_inputs = {
-                    key: value.to("cuda") for key, value in model_inputs.items()
-                }
-
-            with torch.no_grad():
-                outputs = model(**model_inputs)
-                image_features = outputs.image_embeds
-                text_features = outputs.text_embeds
-                dot_product = (
-                    image_features
-                    @ (text_features / text_features.norm(dim=-1, keepdim=True)).T
-                )
-
-            return {
-                "image": image_features.cpu().numpy(),
-                "text": text_features.cpu().numpy(),
-                "dot": dot_product.cpu().numpy(),
-            }
-
-        return predict
-
-    def _transform(self, df: DataFrame):
-        schema = StructType(
-            [
-                StructField("image", ArrayType(FloatType()), True),
-                StructField("text", ArrayType(FloatType()), True),
-                StructField("dot", ArrayType(FloatType()), True),
-            ]
-        )
-
-        predict_udf = predict_batch_udf(
-            self._make_predict_fn, return_type=schema, batch_size=self.batch_size
-        )
-        return df.withColumn(
-            self.getOutputCol(),
-            explode(array(predict_udf(self.getInputCols()[0], self.getInputCols()[1]))),
-        )
-
-
-class WrappedCLIPV2(
-    Transformer,
-    HasInputCols,
-    HasOutputCol,
-    DefaultParamsReadable,
-    DefaultParamsWritable,
-):
-    """
-    Wrapper for CLIP to add it to the pipeline
-    """
-
-    def __init__(
-        self,
-        input_cols: list[str] = ["input_img", "input_txt"],
         output_col_dummy: str = "output",
-        output_cols: list[str] = ["image", "text", "dot"],
+        output_cols: list[str] = ["image", "text", "dot", "similarity"],
         model_name="openai/clip-vit-base-patch32",
         batch_size=64,
     ):
@@ -288,7 +199,22 @@ class WrappedCLIPV2(
     def _make_predict_fn(self):
         """Return PredictBatchFunction using a closure over the model"""
 
-        processor = CLIPProcessor.from_pretrained(self.model_name)
+        # cannot use unk and pad token yet because I need to include it vocab as well
+        tokenizer = CLIPTokenizer.from_pretrained(
+            self.model_name,
+            padding=True,
+            truncation=True,
+            # unknown_token="<|unk|>",
+            # pad_token="<|pad|>",
+            return_tensors="pt",
+            max_length=77,
+        )
+
+        image_processor = CLIPImageProcessor.from_pretrained(
+            self.model_name,
+            return_tensors="pt",
+        )
+        processor = CLIPProcessor(tokenizer=tokenizer, image_processor=image_processor)
         model = CLIPModel.from_pretrained(self.model_name)
 
         # Move model to GPU
@@ -300,35 +226,31 @@ class WrappedCLIPV2(
 
             text_obj = [txt for txt in texts]
 
-            # TDOD: Add padding and truncation to the processor somewhere esel
             model_inputs = processor(
                 text=text_obj,
                 images=image_obj,
                 return_tensors="pt",
-                # padding=True,
-                # truncation=True,
+                padding=True,
+                truncation=True,
             )
 
             # Move inputs to GPU
             if torch.cuda.is_available():
-                model_inputs = {
-                    key: value.to("cuda") for key, value in model_inputs.items()
-                }
+                model_inputs = {key: value.to("cuda") for key, value in model_inputs.items()}
 
             with torch.no_grad():
                 outputs = model(**model_inputs)
                 image_features = outputs.image_embeds
                 text_features = outputs.text_embeds
                 # Combine image and text features into an embedding which accounts for similiarity of both (dot product)
-                dot_product = (
-                    image_features
-                    @ (text_features / text_features.norm(dim=-1, keepdim=True)).T
-                )
+                dot_product = image_features @ text_features.T
+                similarity = outputs.logits_per_image
 
             return {
                 self.output_cols[0]: image_features.cpu().numpy(),
                 self.output_cols[1]: text_features.cpu().numpy(),
                 self.output_cols[2]: dot_product.cpu().numpy(),
+                self.output_cols[3]: similarity.cpu().numpy(),
             }
 
         return predict
@@ -341,12 +263,11 @@ class WrappedCLIPV2(
                 StructField(self.output_cols[0], ArrayType(FloatType()), True),
                 StructField(self.output_cols[1], ArrayType(FloatType()), True),
                 StructField(self.output_cols[2], ArrayType(FloatType()), True),
+                StructField(self.output_cols[3], ArrayType(FloatType()), True),
             ]
         )
 
-        predict_udf = predict_batch_udf(
-            self._make_predict_fn, return_type=schema, batch_size=self.batch_size
-        )
+        predict_udf = predict_batch_udf(self._make_predict_fn, return_type=schema, batch_size=self.batch_size)
 
         # perform predict batch udf and save StructField Result in dummy output COL
         df = df.withColumn(
@@ -356,14 +277,9 @@ class WrappedCLIPV2(
 
         # get the results of the StructField and save them in the real outputcols
         return (
-            df.withColumn(
-                self.output_cols[0], df[self.getOutputCol()][self.output_cols[0]]
-            )
-            .withColumn(
-                self.output_cols[1], df[self.getOutputCol()][self.output_cols[1]]
-            )
-            .withColumn(
-                self.output_cols[2], df[self.getOutputCol()][self.output_cols[2]]
-            )
+            df.withColumn(self.output_cols[0], df[self.getOutputCol()][self.output_cols[0]])
+            .withColumn(self.output_cols[1], df[self.getOutputCol()][self.output_cols[1]])
+            .withColumn(self.output_cols[2], df[self.getOutputCol()][self.output_cols[2]])
+            .withColumn(self.output_cols[3], df[self.getOutputCol()][self.output_cols[3]])
             .drop(self.getOutputCol())
         )

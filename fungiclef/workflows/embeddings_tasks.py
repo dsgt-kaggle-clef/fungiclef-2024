@@ -6,7 +6,7 @@ from pyspark.ml.functions import vector_to_array
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
 
-from fungiclef.embedding.transforms import DCTN, WrappedDinoV2, WrappedCLIPV2
+from fungiclef.embedding.transforms import DCTN, WrappedDinoV2, WrappedCLIP
 from fungiclef.utils import spark_resource
 
 
@@ -192,7 +192,7 @@ class ProcessCLIP(ProcessBase):
             list: The list of feature columns.
 
         """
-        return ["clip_img_embeddings", "clip_text_embeddings", "clip_dot_embeddings"]
+        return ["clip_img_embeddings", "clip_text_embeddings", "clip_dot_embeddings", "clip_similarity"]
 
     def pipeline(self):
         """
@@ -202,19 +202,15 @@ class ProcessCLIP(ProcessBase):
             Pipeline: The data processing pipeline.
 
         """
-        dino = WrappedCLIPV2(
+        dino = WrappedCLIP(
             input_cols=["data", "text_data"],
-            output_cols=[
-                "clip_img_embeddings",
-                "clip_text_embeddings",
-                "clip_dot_embeddings",
-            ],
+            output_cols=["clip_img_embeddings", "clip_text_embeddings", "clip_dot_embeddings", "clip_similarity"],
         )
         return Pipeline(
             stages=[
                 dino,
                 SQLTransformer(
-                    statement="SELECT ImageUniqueID, species, clip_img_embeddings, clip_text_embeddings, clip_dot_embeddings FROM __THIS__"
+                    statement="SELECT ImageUniqueID, species, clip_img_embeddings, clip_text_embeddings, clip_dot_embeddings, clip_similarity FROM __THIS__"
                 ),
             ]
         )
