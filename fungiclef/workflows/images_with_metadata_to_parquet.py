@@ -79,8 +79,9 @@ def create_dataframe(spark, images_path: dict[str, Path], metadata_path: dict[st
         final_df_dict.update({name: final_df})
 
     final_df = final_df_dict["train"].unionByName(final_df_dict["val"], allowMissingColumns=True)
+    final_df_filtered = final_df.filter(final_df["data_set"].isNotNull())  # filter out images without metadtata (test set images)
 
-    final_merge_stats = final_df.groupBy("data_set").count()
+    final_merge_stats = final_df_filtered.groupBy("data_set").count()
     print("After merging metadata on images.")
     print("Final merged stats:")
     print(final_merge_stats.show())
@@ -89,7 +90,7 @@ def create_dataframe(spark, images_path: dict[str, Path], metadata_path: dict[st
     print(img_stats_dict)
     print("Metadata stats:")
     print(meta_stats_dict)
-    return final_df
+    return final_df_filtered
 
 
 def read_config():
@@ -113,7 +114,7 @@ def main():
     images_val_path = Path("../../../") / Path(config["mnt_data_paths"]) / Path("DF21_300")
     metadata_val_path = config["gs_paths"]["val"]["metadata"]
 
-    # Test data
+    # Test data - not used
     metadata_test_path = config["gs_paths"]["test"]["metadata"]
 
     # Output path
