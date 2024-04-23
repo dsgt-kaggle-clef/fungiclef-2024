@@ -66,8 +66,9 @@ def create_dataframe(spark, images_path: dict[str, Path], metadata_path: dict[st
         metadata_df_dict.update({name: meta_df})
 
     # Combine Val and Test for easier processing with image_df_dict
-    metadata_df_dict["val"] = metadata_df_dict["val"].unionByName(metadata_df_dict.pop("test"), allowMissingColumns=True)
-    meta_stats_dict["val_and_test"] = meta_stats_dict["val"] + meta_stats_dict["test"]
+    if metadata_df_dict.get("test"):
+        metadata_df_dict["val"] = metadata_df_dict["val"].unionByName(metadata_df_dict.pop("test"), allowMissingColumns=True)
+        meta_stats_dict["val_and_test"] = meta_stats_dict["val"] + meta_stats_dict["test"]
 
     # Perform an inner join on the 'image_path' column
     final_df_dict = dict()
@@ -116,13 +117,13 @@ def main():
     metadata_test_path = config["gs_paths"]["test"]["metadata"]
 
     # Output path
-    output_path = config["gs_paths"]["train_and_test_300px_w_test_meta"]["raw_parquet"]
+    output_path = config["gs_paths"]["train_and_test_300px_corrected"]["raw_parquet"]
 
     images_paths = {"train": images_train_path, "val": images_val_path}
     metadata_paths = {
         "train": metadata_train_path,
         "val": metadata_val_path,
-        "test": metadata_test_path,
+        # "test": metadata_test_path,
     }
 
     # Create image dataframe

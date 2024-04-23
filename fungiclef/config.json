@@ -43,14 +43,14 @@
             "train_dct_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_train_embedding/dino/data",
             "train_clip_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_train_embedding/clip/data"
         },
-        "train_and_test_300px_w_test_meta": {
-            "raw_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_w_test_meta",
-            "train_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_w_test_meta_TRAIN",
-            "test_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_w_test_meta_TEST",
-            "train_embedding_dir": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_w_test_meta_embedding",
-            "train_dino_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_w_test_meta_embedding/dino/data",
-            "train_dct_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_w_test_meta_embedding/dino/data",
-            "train_clip_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_w_test_meta_embedding/clip/data"
+        "train_and_test_300px_corrected": {
+            "raw_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_corrected",
+            "train_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_corrected_TRAIN",
+            "test_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_corrected_TEST",
+            "train_embedding_dir": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_corrected_embedding",
+            "train_dino_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_corrected_embedding/dino/data",
+            "train_dct_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_corrected_embedding/dino/data",
+            "train_clip_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_corrected_embedding/clip/data"
         }
 
     },
