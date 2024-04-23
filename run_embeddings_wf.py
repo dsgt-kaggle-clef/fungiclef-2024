@@ -9,13 +9,13 @@ parser = argparse.ArgumentParser(description="Luigi pipeline")
 parser.add_argument(
     "--input-data-path",
     type=str,
-    default=f"{config['gs_paths']['train_and_test_300px_w_test_meta']['train_parquet']}",
+    default=f"{config['gs_paths']['train_and_test_300px_corrected']['train_parquet']}",
     help="Root directory for training data in GCS",
 )
 parser.add_argument(
     "--output-name-path",
     type=str,
-    default=f"{config['gs_paths']['train_and_test_300px_w_test_meta']['train_embedding_dir']}",
+    default=f"{config['gs_paths']['train_and_test_300px_corrected']['train_embedding_dir']}",
     help="GCS path for output Parquet files",
 )
 parser.add_argument(

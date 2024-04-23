@@ -47,6 +47,10 @@ def train_test_split(df: pyspark.sql.DataFrame, train_pct: float, stratify_col: 
     print("DataFrame Length:")
     print(f"Train fraction: {train_count/total_count}")
     print(f"Test fraction: {test_count/total_count}")
+    print("Absolute numbers")
+    print(f"Total count: {total_count}")
+    print(f"Train count: {train_count}")
+    print(f"Test count: {test_count}")
 
     df_per_class = df.groupBy(stratify_col).count().withColumnRenamed("count", "total_count")
     train_per_class = train_df.groupBy(stratify_col).count().withColumnRenamed("count", "train_count")
@@ -115,11 +119,11 @@ def main():
     spark = get_spark()
 
     # Path to the images and metadata in a dataframe of train and test 300px
-    df_path = config["gs_paths"]["train_and_test_300px_w_test_meta"]["raw_parquet"]
+    df_path = config["gs_paths"]["train_and_test_300px_corrected"]["raw_parquet"]
 
     # Output_paths
-    train_output_path = config["gs_paths"]["train_and_test_300px_w_test_meta"]["train_parquet"]
-    test_output_path = config["gs_paths"]["train_and_test_300px_w_test_meta"]["test_parquet"]
+    train_output_path = config["gs_paths"]["train_and_test_300px_corrected"]["train_parquet"]
+    test_output_path = config["gs_paths"]["train_and_test_300px_corrected"]["test_parquet"]
 
     # Load the DataFrame from the Parquet file
     df = spark.read.parquet(df_path)
@@ -130,7 +134,7 @@ def main():
     # Create image dataframe
     train_df, test_df = train_test_split(
         df=df,
-        train_pct=0.8,
+        train_pct=0.9,
         stratify_col="class_id",
     )
 
