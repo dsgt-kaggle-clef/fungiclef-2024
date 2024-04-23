@@ -9,6 +9,7 @@
         "test_metadata": "FungiCLEF2023_public_test_metadata_PRODUCTION.csv"
     },
     "gs_paths": {
+        "root": "gs://dsgt-clef-fungiclef-2024",
         "train": {
             "images": "gs://dsgt-clef-fungiclef-2024/raw/DF20-train_val.tar.gz",
             "metadata": "gs://dsgt-clef-fungiclef-2024/raw/FungiCLEF2023_train_metadata_PRODUCTION.csv"
@@ -24,6 +25,9 @@
         "val_300px": {
             "images": "gs://dsgt-clef-fungiclef-2024/raw/DF21_300.tar.gz"
         },
+        "test": {
+            "metadata": "gs://dsgt-clef-fungiclef-2024/raw/FungiCLEF2023_public_test_metadata_PRODUCTION.csv"
+        },
         "dev_set": {
             "train": "gs://dsgt-clef-fungiclef-2024/dev/dev_train",
             "test": "gs://dsgt-clef-fungiclef-2024/dev/dev_test",
@@ -34,8 +38,21 @@
         "train_and_test_300px": {
             "raw_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px",
             "train_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_train",
-            "test_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_test"
+            "test_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_test",
+            "train_dino_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_train_embedding/dino/data",
+            "train_dct_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_train_embedding/dino/data",
+            "train_clip_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_train_embedding/clip/data"
+        },
+        "train_and_test_300px_w_test_meta": {
+            "raw_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_w_test_meta",
+            "train_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_w_test_meta_TRAIN",
+            "test_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_w_test_meta_TEST",
+            "train_embedding_dir": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_w_test_meta_embedding",
+            "train_dino_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_w_test_meta_embedding/dino/data",
+            "train_dct_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_w_test_meta_embedding/dino/data",
+            "train_clip_parquet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_w_test_meta_embedding/clip/data"
         }
+
     },
     "mnt_data_paths":
         "mnt/data"
