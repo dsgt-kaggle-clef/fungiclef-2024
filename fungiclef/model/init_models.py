@@ -8,7 +8,7 @@ from efficientnet_pytorch import EfficientNet
 # TODO: Make some crazy multi-head thing. This will do for now
 
 VIT_MODEL_NAME = 'vit_large_patch16_224'
-def get_vit_classifier(n_classes:int , pretrained_path=None, use_imagenet_pretrain=False):
+def init_vit_classifier(n_classes:int , pretrained_path=None, use_imagenet_pretrain=False):
     # Make simple classifier model with pretrained VIT
     pretrained_weights = None
     
@@ -23,7 +23,7 @@ def get_vit_classifier(n_classes:int , pretrained_path=None, use_imagenet_pretra
 
     return model
 
-def get_efficientnet_classifier(n_classes:int , pretrained_path=None):
+def init_efficientnet_classifier(n_classes:int , pretrained_path=None):
     # Make simple classifier model with EfficientNet
     model = EfficientNet.from_pretrained('efficientnet-b5')
 
@@ -34,11 +34,8 @@ def get_efficientnet_classifier(n_classes:int , pretrained_path=None):
         model.load_state_dict(pretrained_weights)
 
     return model
-    
-    
-    
 
-def get_embedding_classifier(n_classes:int, embedding_size=384, checkpoint_path=None,):
+def init_embedding_classifier(n_classes:int, embedding_size=384, checkpoint_path=None,):
     # Generates simple linear layer for classification
     
     model = nn.Linear(embedding_size, n_classes)
@@ -48,5 +45,3 @@ def get_embedding_classifier(n_classes:int, embedding_size=384, checkpoint_path=
         model.load_state_dict(weights)
 
     return model
-
-

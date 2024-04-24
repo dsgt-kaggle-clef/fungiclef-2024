@@ -16,6 +16,8 @@ gcsfs
 fsspec
 timm
 pacmap
+efficientnet_pytorch
+albumentations
 
 # developer tools
 jupyterlab

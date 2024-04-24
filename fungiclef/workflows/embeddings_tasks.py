@@ -128,7 +128,7 @@ class ProcessDino(ProcessBase):
         return Pipeline(
             stages=[
                 dino,
-                SQLTransformer(statement="SELECT ImageUniqueID, species, dino_embedding FROM __THIS__"),
+                SQLTransformer(statement="SELECT image_path, species, dino_embedding FROM __THIS__"),
             ]
         )
 
@@ -162,7 +162,7 @@ class ProcessDCTN(ProcessBase):
         return Pipeline(
             stages=[
                 dct,
-                SQLTransformer(statement="SELECT ImageUniqueID, species, dct_embedding FROM __THIS__"),
+                SQLTransformer(statement="SELECT image_path, species, dct_embedding FROM __THIS__"),
             ]
         )
 
@@ -210,7 +210,7 @@ class ProcessCLIP(ProcessBase):
             stages=[
                 dino,
                 SQLTransformer(
-                    statement="SELECT ImageUniqueID, species, clip_img_embeddings, clip_text_embeddings, clip_dot_embeddings, clip_similarity FROM __THIS__"
+                    statement="SELECT image_path, species, clip_img_embeddings, clip_text_embeddings, clip_dot_embeddings, clip_similarity FROM __THIS__"
                 ),
             ]
         )

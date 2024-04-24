@@ -16,7 +16,7 @@ os.environ["PYSPARK_DRIVER_PYTHON"] = sys.executable
 def get_spark(cores=os.cpu_count(),
               memory=os.environ.get("PYSPARK_DRIVER_MEMORY", "4g"),
               executor_memory=os.environ.get("PYSPARK_EXECUTOR_MEMORY", "1g"),
-              local_dir="/mnt/data/tmp", app_name="fungi_clef", **kwargs):
+              local_dir="./tmp", app_name="fungi_clef", **kwargs):
     """Get a spark session for a single driver."""
     builder = (
         SparkSession.builder.config("spark.driver.memory", memory)
