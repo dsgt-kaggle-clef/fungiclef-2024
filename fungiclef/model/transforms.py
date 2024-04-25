@@ -4,8 +4,8 @@ from albumentations.pytorch import ToTensorV2
 from albumentations import RandomCrop, HorizontalFlip, VerticalFlip, RandomBrightnessContrast, CenterCrop, PadIfNeeded, RandomResizedCrop
 import torch.nn as nn
 
-WIDTH = 224
-HEIGHT = 224
+WIDTH = 299
+HEIGHT = 299
 
 
 def get_transforms(*, data, model=None):

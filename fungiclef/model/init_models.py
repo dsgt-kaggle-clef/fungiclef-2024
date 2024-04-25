@@ -28,9 +28,9 @@ def init_efficientnet_classifier(n_classes:int , pretrained_path=None):
     model = EfficientNet.from_pretrained('efficientnet-b5')
 
     model._fc = nn.Linear(model._fc.in_features, n_classes)
-    pretrained_weights = None
 
-    if pretrained_weights: 
+    if pretrained_path: 
+        pretrained_weights = torch.load(pretrained_path)
         model.load_state_dict(pretrained_weights)
 
     return model

@@ -18,7 +18,6 @@ class FungiModel(L.LightningModule):
         
     def training_step(self, batch, batch_idx):
         
-        
         x, y = batch
         y = y.long()
         y_pred = self.model(x)
