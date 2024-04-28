@@ -49,8 +49,6 @@ class FungiModel(L.LightningModule):
     
     def on_train_epoch_end(self):
         all_train_loss = torch.stack(self.train_loss)
-        # do something with all preds
-        print(all_train_loss.shape)
         avg_train_loss = all_train_loss.mean()
         self.log("train_loss", avg_train_loss, prog_bar=True, logger=True, sync_dist=True, on_epoch=True)
         

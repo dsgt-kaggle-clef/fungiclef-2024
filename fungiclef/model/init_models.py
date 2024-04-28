@@ -4,6 +4,8 @@ import torch.nn as nn
 from fungiclef.model.utils import get_timm_model
 from efficientnet_pytorch import EfficientNet
 
+from fungiclef.model.cosine_classifier import CosineSimilarityLayer
+
 
 # TODO: Make some crazy multi-head thing. This will do for now
 
@@ -35,10 +37,21 @@ def init_efficientnet_classifier(n_classes:int , pretrained_path=None):
 
     return model
 
-def init_embedding_classifier(n_classes:int, embedding_size=384, checkpoint_path=None,):
+def init_embedding_classifier_linear(n_classes:int, embedding_size=384, checkpoint_path=None,):
     # Generates simple linear layer for classification
     
     model = nn.Linear(embedding_size, n_classes)
+    
+    if checkpoint_path: 
+        weights = torch.load(checkpoint_path)
+        model.load_state_dict(weights)
+
+    return model
+
+def init_embedding_classifier_cosine(n_classes:int, embedding_size=384, checkpoint_path=None, embedding_path=None):
+    # Generates simple linear layer for classification
+    
+    model = CosineSimilarityLayer(embedding_size, n_classes, embedding_path=embedding_path)
     
     if checkpoint_path: 
         weights = torch.load(checkpoint_path)
