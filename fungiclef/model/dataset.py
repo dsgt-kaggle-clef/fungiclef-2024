@@ -40,8 +40,9 @@ class ImageDataset(Dataset):
         return image, label
 
 class EmbeddingDataset(Dataset):
-    def __init__(self, df):
+    def __init__(self, df, emb_key='embeddings'):
         self.df = df
+        self.emb_key = emb_key
         
     def __len__(self):
         return len(self.df)
@@ -49,6 +50,6 @@ class EmbeddingDataset(Dataset):
     def __getitem__(self, idx):
         label = self.df['class_id'].values[idx]
         
-        embedding = np.array(self.df['embeddings'].values[idx])
+        embedding = np.array(self.df[self.emb_key].values[idx]).astype(np.float32)
 
         return embedding, label
