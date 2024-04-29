@@ -160,8 +160,10 @@ class FungiModel(L.LightningModule):
         self.valid_accuracy_poison.reset()
 
     def configure_optimizers(self):
-        optimizer = optim.Adam(self.parameters(), lr=1e-3)
+        optimizer = self.optimizer
         return optimizer
+    
+    
 
 
 # # init the autoencoder

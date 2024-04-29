@@ -27,11 +27,10 @@ class CosineSimilarityLayer(nn.Module):
 
         for i in tqdm(range(self.num_classes)):
             mean_embeddings.append(
-                torch.Tensor(list(df[df.class_id == i].embeddings)).mean(axis=0)
+                torch.Tensor(list(df[df.class_id == i].embedding)).mean(axis=0)
             )
 
         return torch.stack(mean_embeddings)
-
 
     def forward(self, x):
         # Normalize the input features and the class embeddings to unit vectors along the feature dimension

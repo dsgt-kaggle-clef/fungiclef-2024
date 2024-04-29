@@ -121,6 +121,7 @@ class FungiModelLoss:
                 self.seesaw = DistibutionAgnosticSeesawLossWithLogits()
 
         self.loss_fn = loss
+        self.weight = class_weight
 
     def loss(self, pred, target):
         if self.loss_fn == "cross_entropy":

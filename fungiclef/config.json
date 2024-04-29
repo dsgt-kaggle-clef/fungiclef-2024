@@ -17,7 +17,8 @@
                 "column_mapping_pkl": "gs://dsgt-clef-fungiclef-2024/production/metadata/categorical_columns_mapping.pkl"
             },
             "embedding_dir": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_corrected_FULL_SET_embedding",
-            "embedding_dino": "EMPTY - CURRENTLY RUNNING",
+            "embedding_dino_dct_16": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_corrected_FULL_SET_embedding/dino_dct_16",
+            "embedding_dino": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_corrected_FULL_SET_embedding/dino",
             "embedding_resnet": "gs://dsgt-clef-fungiclef-2024/data/parquet/DF20_300px_and_DF21_300px_corrected_FULL_SET_embedding/resnet",
             "dataset_resnet": {
                 "train": "gs://dsgt-clef-fungiclef-2024/production/resnet/DF_300_train.parquet",
