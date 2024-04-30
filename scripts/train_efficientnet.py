@@ -80,7 +80,7 @@ trainer = L.Trainer(
 
 # Class distribution for seesaw loss
 class_distribution = []
-c = train_df.class_id.value_counts()
+c = val_df.class_id.value_counts()
 for i in range(1605):
     class_distribution.append(c.get(i, 0))
 
