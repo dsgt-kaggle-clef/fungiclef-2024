@@ -13,7 +13,6 @@ train_df = pd.read_csv("../metadata_train.csv")
 val_df = pd.read_csv("../metadata_val.csv")
 test_df = pd.read_csv("../metadata_test.csv")
 
-
 # train_df = pd.read_csv("../trial_metadata.csv")
 # val_df = pd.read_csv("../trial_metadata.csv")
 # test_df = pd.read_csv("../trial_metadata.csv")
@@ -42,7 +41,7 @@ model = init_efficientnet_classifier(n_classes=N_CLASSES)
 _weights = model.state_dict()
 
 # Load pretrained stuff
-weights = torch.load("../checkpoints/DF20-EfficientNet-B5_best_accuracy.pth")
+weights = torch.load("../checkpoints/efficientnet_b5_ce_base.pth")
 weights["_fc.weight"] = _weights["_fc.weight"]
 weights["_fc.bias"] = _weights["_fc.bias"]
 model.load_state_dict(weights)
@@ -79,8 +78,18 @@ trainer = L.Trainer(
     callbacks=[checkpoint_callback], logger=wandb_logger, max_epochs=EPOCHS
 )
 
+# Class distribution for seesaw loss
+class_distribution = []
+c = val_df.class_id.value_counts()
+for i in range(1605):
+    class_distribution.append(c.get(i, 0))
+
 # Try use focal loss
-loss = FungiModelLoss(loss="focal_loss")
-module = FungiModel(model, loss=loss.loss)
+loss = FungiModelLoss(loss="seesaw", class_distribution=class_distribution)
+module = FungiModel(
+    model,
+    loss=loss.loss,
+    optimizer=torch.optim.AdamW(model.parameters(), lr=5e-5, weight_decay=0.05),
+)
 
 trainer.fit(module, train_loader, valid_loader)

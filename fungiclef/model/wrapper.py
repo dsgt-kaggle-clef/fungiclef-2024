@@ -20,7 +20,9 @@ class FungiModel(L.LightningModule):
         super().__init__()
         self.model = model
         self.optimizer = (
-            optimizer if optimizer else optim.Adam(self.parameters(), lr=1e-3)
+            (
+            optimizer if optimizer else optim.Adam(self.parameters(), lr=1e-5)
+        )
         )
 
         self.poison_mapping = get_poison_mapping().to(self.device)
@@ -28,18 +30,26 @@ class FungiModel(L.LightningModule):
         self.loss = loss if loss else nn.functional.cross_entropy
         self.train_loss = []
         self.train_accuracy_class_top_1 = Accuracy(
+            
             task="multiclass", num_classes=N_CLASSES
+        
         )
         self.valid_accuracy_class_top_1 = Accuracy(
+            
             task="multiclass", num_classes=N_CLASSES
+        
         )
         self.train_f1 = MulticlassF1Score(num_classes=N_CLASSES, average='macro')
         self.valid_f1 = MulticlassF1Score(num_classes=N_CLASSES, average='macro')
         self.train_accuracy_class_top_3 = Accuracy(
+            
             task="multiclass", num_classes=N_CLASSES, top_k=3
+        
         )
         self.valid_accuracy_class_top_3 = Accuracy(
+            
             task="multiclass", num_classes=N_CLASSES, top_k=3
+        
         )
         self.train_accuracy_poison = Accuracy(task="binary")
         self.valid_accuracy_poison = Accuracy(task="binary")
@@ -70,8 +80,10 @@ class FungiModel(L.LightningModule):
 
         return loss
 
+
     def on_train_epoch_end(self):
         all_train_loss = torch.stack(self.train_loss)
+        # do something with all preds
         avg_train_loss = all_train_loss.mean()
         self.log(
             "train_loss",
@@ -120,6 +132,7 @@ class FungiModel(L.LightningModule):
         self.train_accuracy_poison.reset()
         self.train_f1.reset()
         self.train_loss.clear()  # free memory
+
 
     def validation_step(self, batch, batch_idx):
         # this is the validation loop
@@ -211,3 +224,4 @@ class FungiModel(L.LightningModule):
 
 # # init the autoencoder
 # autoencoder = LitAutoEncoder(encoder, decoder)
+
