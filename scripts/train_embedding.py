@@ -1,4 +1,4 @@
-from fungiclef.model.dataset import ImageDataset, EmbeddingDataset
+from fungiclef.model.dataset import ImageDataset, EmbeddingDataset, EmbeddingMetadataDataset
 from fungiclef.model.wrapper import FungiModel
 from fungiclef.model.transforms import get_transforms
 from fungiclef.utils import get_spark, spark_resource, read_config
@@ -31,8 +31,8 @@ train_df = pd.read_parquet(DINO_TRAIN)
 val_df = pd.read_parquet(DINO_VAL)
 
 # Load it as torch dataset
-train_dataset = EmbeddingDataset(train_df, emb_key="embedding")
-valid_dataset = EmbeddingDataset(val_df, emb_key="embedding")
+train_dataset = EmbeddingMetadataDataset(train_df, emb_key="embedding")
+valid_dataset = EmbeddingMetadataDataset(val_df, emb_key="embedding")
 
 N_CLASSES = len(
     train_df.class_id.unique()
@@ -70,7 +70,7 @@ wandb_logger = WandbLogger(log_model=False, project="FungiClef")
 # )
 
 trainer = L.Trainer(
-    logger=wandb_logger, max_epochs=100
+    logger=wandb_logger, max_epochs=EPOCHS
 )
 
 

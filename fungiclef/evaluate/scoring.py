@@ -1,10 +1,10 @@
-## From https://huggingface.co/picekl/FungiCLEF2024-Sample_Submission/blob/main/script.py 
+## From https://huggingface.co/picekl/FungiCLEF2024-Sample_Submission/blob/main/script.py
 
 from typing import List
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import f1_score
+from sklearn.metrics import f1_score, accuracy_score
 
 COLUMNS = ["observationID", "class_id"]
 poisonous_lvl = pd.read_csv(
@@ -16,7 +16,9 @@ POISONOUS_SPECIES = poisonous_lvl[poisonous_lvl["poisonous"] == 1].class_id.uniq
 def classification_error_with_unknown(
     merged_df, cost_unkwnown_misclassified=10, cost_misclassified_as_unknown=0.1
 ):
-    num_misclassified_unknown = sum((merged_df.class_id_gt == -1) & (merged_df.class_id_pred != -1))
+    num_misclassified_unknown = sum(
+        (merged_df.class_id_gt == -1) & (merged_df.class_id_pred != -1)
+    )
     num_misclassified_as_unknown = sum(
         (merged_df.class_id_gt != -1) & (merged_df.class_id_pred == -1)
     )
@@ -58,18 +60,20 @@ def num_esc_decisions(merged_df):
 
 def psc_esc_cost_score(merged_df, cost_psc=100, cost_esc=1):
     return (
-        cost_psc * num_psc_decisions(merged_df) + cost_esc * num_esc_decisions(merged_df)
+        cost_psc * num_psc_decisions(merged_df)
+        + cost_esc * num_esc_decisions(merged_df)
     ) / len(merged_df)
 
+
 def score_model(predicted_class: np.ndarray, gt_df: pd.DataFrame):
-    
+
     pred_df = gt_df[["observationID"]].copy()
 
     try:
-        pred_df['class_id'] = predicted_class
+        pred_df["class_id"] = predicted_class
     except Exception as e:
         raise ValueError("Prediction Length Mismatch: {e}".format(e=e))
-    
+
     gt_df = gt_df.drop_duplicates("observationID")
     pred_df = pred_df.drop_duplicates("observationID")
 
@@ -104,24 +108,26 @@ def score_model(predicted_class: np.ndarray, gt_df: pd.DataFrame):
     cls_error_with_unknown = classification_error_with_unknown(merged_df)
     psc_esc_cost = psc_esc_cost_score(merged_df)
 
-    result = [
-        {
-            "test_split": {
-                "F1 Score": np.round(
-                    f1_score(merged_df["class_id_gt"], merged_df["class_id_pred"], average="macro")
-                    * 100,
-                    2,
-                ),
-                "Track 1: Classification Error": np.round(cls_error, 4),
-                "Track 2: Cost for Poisonousness Confusion": np.round(psc_esc_cost, 4),
-                "Track 3: User-Focused Loss": np.round(cls_error + psc_esc_cost, 4),
-                "Track 4: Classification Error with Special Cost for Unknown": np.round(
-                    cls_error_with_unknown, 4
-                ),
-            }
-        }
-    ]
+    result = {
+        "F1 Score": np.round(
+            f1_score(
+                merged_df["class_id_gt"], merged_df["class_id_pred"], average="macro"
+            )
+            * 100,
+            2,
+        ),
+        "Accuracy": np.round(
+            accuracy_score(merged_df["class_id_gt"], merged_df["class_id_pred"]) * 100,
+            2,
+        ),
+        "Track 1: Classification Error": np.round(cls_error, 4),
+        "Track 2: Cost for Poisonousness Confusion": np.round(psc_esc_cost, 4),
+        "Track 3: User-Focused Loss": np.round(cls_error + psc_esc_cost, 4),
+        "Track 4: Classification Error with Special Cost for Unknown": np.round(
+            cls_error_with_unknown, 4
+        ),
+    }
 
-    print(f"Evaluated scores: {result[0]['test_split']}")
+    print(f"Evaluated scores: {result}")
 
     return result
