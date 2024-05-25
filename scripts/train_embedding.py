@@ -1,6 +1,6 @@
-from fungiclef.model.dataset import ImageDataset, EmbeddingDataset, EmbeddingMetadataDataset
-from fungiclef.model.wrapper import FungiModel
-from fungiclef.model.transforms import get_transforms
+from fungiclef._model._dataset import ImageDataset, EmbeddingDataset, EmbeddingMetadataDataset
+from fungiclef.wrapper import FungiModel
+from fungiclef.transforms import get_transforms
 from fungiclef.utils import get_spark, spark_resource, read_config
 import pandas as pd
 
@@ -10,8 +10,8 @@ from lightning.pytorch.loggers import WandbLogger
 from torch.utils.data import DataLoader
 import lightning as L
 import torch
-from fungiclef.model.loss import FungiModelLoss
-from fungiclef.model.init_models import init_embedding_classifier_linear, init_embedding_classifier_cosine, init_embedding_classifier_mlp
+from fungiclef._model.loss import FungiModelLoss
+from fungiclef._model.init_models import init_embedding_classifier_linear, init_embedding_classifier_cosine, init_embedding_classifier_mlp
 
 from torch import optim, nn, utils, Tensor
 

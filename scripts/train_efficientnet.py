@@ -1,13 +1,13 @@
-from fungiclef.model.dataset import ImageDataset, EmbeddingDataset
-from fungiclef.model.wrapper import FungiModel
-from fungiclef.model.transforms import get_transforms
+from fungiclef._model._dataset import ImageDataset, EmbeddingDataset
+from fungiclef._model.wrapper import FungiModel
+from fungiclef._model.transforms import get_transforms
 from fungiclef.utils import get_spark, spark_resource, read_config
 import pandas as pd
 
 from torch.utils.data import DataLoader
 import lightning as L
 import torch
-from fungiclef.model.loss import FungiModelLoss
+from fungiclef._model.loss import FungiModelLoss
 
 train_df = pd.read_csv("../metadata_train.csv")
 val_df = pd.read_csv("../metadata_val.csv")
@@ -28,7 +28,7 @@ valid_dataset = ImageDataset(
 )
 
 # Define model. Here we use a simple stupid linear layer layer
-from fungiclef.model.init_models import init_efficientnet_classifier
+from fungiclef._model.init_models import init_efficientnet_classifier
 
 # N_CLASSES = len(
 #     train_df.class_id.unique()
